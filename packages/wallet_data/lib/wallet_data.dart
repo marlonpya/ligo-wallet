@@ -6,3 +6,5 @@ export 'src/auth/default_auth_repository.dart';
 export 'src/auth/session_expiry_handler.dart';
 export 'src/auth/session_token_provider.dart';
 export 'src/core/api_failure_mapper.dart';
+export 'src/movements/default_movements_repository.dart';
+export 'src/movements/movement_mapper.dart';
