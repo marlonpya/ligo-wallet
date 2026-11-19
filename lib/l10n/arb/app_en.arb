@@ -1,7 +1,120 @@
 {
     "@@locale": "en",
-    "counterAppBarTitle": "Counter",
-    "@counterAppBarTitle": {
-        "description": "Text shown in the AppBar of the Counter Page"
+    "appTitle": "Wallet",
+    "@appTitle": {
+        "description": "Application name shown in the task switcher and login header"
+    },
+    "loginTitle": "Welcome",
+    "@loginTitle": {
+        "description": "Login page title"
+    },
+    "loginSubtitle": "Sign in to see your account movements",
+    "@loginSubtitle": {
+        "description": "Login page subtitle"
+    },
+    "emailLabel": "Email",
+    "@emailLabel": {
+        "description": "Email field label"
+    },
+    "passwordLabel": "Password",
+    "@passwordLabel": {
+        "description": "Password field label"
+    },
+    "showPasswordTooltip": "Show password",
+    "@showPasswordTooltip": {
+        "description": "Tooltip of the button that reveals the password"
+    },
+    "hidePasswordTooltip": "Hide password",
+    "@hidePasswordTooltip": {
+        "description": "Tooltip of the button that hides the password"
+    },
+    "loginButton": "Sign in",
+    "@loginButton": {
+        "description": "Login submit button"
+    },
+    "emailEmptyError": "Enter your email",
+    "@emailEmptyError": {
+        "description": "Validation error when the email is empty"
+    },
+    "emailInvalidError": "Enter a valid email",
+    "@emailInvalidError": {
+        "description": "Validation error when the email has an invalid format"
+    },
+    "passwordEmptyError": "Enter your password",
+    "@passwordEmptyError": {
+        "description": "Validation error when the password is empty"
+    },
+    "demoCredentialsHint": "Demo account: {email} / {password}",
+    "@demoCredentialsHint": {
+        "description": "Hint with the fake backend credentials, only in the development flavor",
+        "placeholders": {
+            "email": {
+                "type": "String"
+            },
+            "password": {
+                "type": "String"
+            }
+        }
+    },
+    "failureNetwork": "No connection. Check your internet and try again.",
+    "@failureNetwork": {
+        "description": "Error message for network failures"
+    },
+    "failureUnauthorized": "Your session has expired. Please sign in again.",
+    "@failureUnauthorized": {
+        "description": "Error message when the token is rejected"
+    },
+    "failureInvalidCredentials": "Incorrect email or password.",
+    "@failureInvalidCredentials": {
+        "description": "Error message for rejected login credentials"
+    },
+    "failureServer": "We are having trouble right now. Please try again later.",
+    "@failureServer": {
+        "description": "Error message for server errors"
+    },
+    "failureNotFound": "We couldn't find what you were looking for.",
+    "@failureNotFound": {
+        "description": "Error message when a resource does not exist"
+    },
+    "failureData": "We received unexpected information. Please try again.",
+    "@failureData": {
+        "description": "Error message when the response breaks the contract"
+    },
+    "failureUnexpected": "Something went wrong. Please try again.",
+    "@failureUnexpected": {
+        "description": "Generic error message"
+    },
+    "sessionExpiredMessage": "Your session has expired. Please sign in again.",
+    "@sessionExpiredMessage": {
+        "description": "Snackbar shown when the session expires"
+    },
+    "logoutButton": "Sign out",
+    "@logoutButton": {
+        "description": "Sign out action"
+    },
+    "logoutConfirmTitle": "Sign out?",
+    "@logoutConfirmTitle": {
+        "description": "Title of the sign out confirmation dialog"
+    },
+    "logoutConfirmMessage": "You will need to sign in again to see your movements.",
+    "@logoutConfirmMessage": {
+        "description": "Body of the sign out confirmation dialog"
+    },
+    "cancelButton": "Cancel",
+    "@cancelButton": {
+        "description": "Generic cancel action"
+    },
+    "movementsTitle": "Movements",
+    "@movementsTitle": {
+        "description": "Title of the movements page"
+    },
+    "greeting": "Hi, {name}",
+    "@greeting": {
+        "description": "Greeting with the user's name",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
     }
 }

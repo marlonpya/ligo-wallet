@@ -17,18 +17,27 @@ workspace:
 
 dependencies:
   bloc: ^9.2.1
+  bloc_concurrency: ^0.3.0
+  equatable: ^3.0.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  go_router: ^18.1.4
   intl: ^0.20.2
   material_ui: ^1.9.0
-  # La app solo conoce wallet_data desde bootstrap.dart (composición de dependencias).
+  # wallet_api, wallet_data y wallet_storage solo se importan en
+  # lib/bootstrap.dart (composición de dependencias). Lo verifica
+  # test/architecture_test.dart. El resto de la app solo ve wallet_domain.
+  wallet_api:
+    path: packages/wallet_api
   wallet_data:
     path: packages/wallet_data
   wallet_domain:
     path: packages/wallet_domain
+  wallet_storage:
+    path: packages/wallet_storage
 
 dev_dependencies:
   bloc_lint: ^0.4.3

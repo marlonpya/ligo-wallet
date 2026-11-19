@@ -28,6 +28,8 @@ jobs:
       flutter_version: "3.50.x"
       run_bloc_lint: true
       min_coverage: 80
+      # Los paquetes del workspace miden su cobertura en su propio job.
+      coverage_excludes: "lib/l10n/gen/** packages/**"
 
   wallet_domain:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1

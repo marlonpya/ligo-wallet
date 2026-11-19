@@ -1,7 +1,29 @@
 {
     "@@locale": "es",
-    "counterAppBarTitle": "Contador",
-    "@counterAppBarTitle": {
-        "description": "Texto mostrado en la AppBar de la página del contador"
-    }
+    "appTitle": "Billetera",
+    "loginTitle": "Bienvenido",
+    "loginSubtitle": "Inicia sesión para ver los movimientos de tu cuenta",
+    "emailLabel": "Correo electrónico",
+    "passwordLabel": "Contraseña",
+    "showPasswordTooltip": "Mostrar contraseña",
+    "hidePasswordTooltip": "Ocultar contraseña",
+    "loginButton": "Ingresar",
+    "emailEmptyError": "Ingresa tu correo",
+    "emailInvalidError": "Ingresa un correo válido",
+    "passwordEmptyError": "Ingresa tu contraseña",
+    "demoCredentialsHint": "Cuenta demo: {email} / {password}",
+    "failureNetwork": "Sin conexión. Revisa tu internet e inténtalo de nuevo.",
+    "failureUnauthorized": "Tu sesión expiró. Vuelve a iniciar sesión.",
+    "failureInvalidCredentials": "Correo o contraseña incorrectos.",
+    "failureServer": "Estamos teniendo problemas. Inténtalo más tarde.",
+    "failureNotFound": "No encontramos lo que buscabas.",
+    "failureData": "Recibimos información inesperada. Inténtalo de nuevo.",
+    "failureUnexpected": "Algo salió mal. Inténtalo de nuevo.",
+    "sessionExpiredMessage": "Tu sesión expiró. Vuelve a iniciar sesión.",
+    "logoutButton": "Cerrar sesión",
+    "logoutConfirmTitle": "¿Cerrar sesión?",
+    "logoutConfirmMessage": "Tendrás que volver a iniciar sesión para ver tus movimientos.",
+    "cancelButton": "Cancelar",
+    "movementsTitle": "Movimientos",
+    "greeting": "Hola, {name}"
 }

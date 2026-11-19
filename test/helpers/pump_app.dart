@@ -1,14 +1,36 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ligo_wallet/app/config/app_config.dart';
 import 'package:ligo_wallet/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:wallet_domain/wallet_domain.dart';
+
+class MockAuthRepository extends Mock implements AuthRepository;
+
+const testConfig = AppConfig(environment: AppEnvironment.development);
 
 extension PumpApp on WidgetTester {
-  Future<void> pumpApp(Widget widget) {
+  /// Monta [widget] con l10n en español y las dependencias de la app.
+  Future<void> pumpApp(
+    Widget widget, {
+    AuthRepository? authRepository,
+    AppConfig config = testConfig,
+  }) {
     return pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: widget,
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider.value(value: config),
+          RepositoryProvider<AuthRepository>.value(
+            value: authRepository ?? MockAuthRepository(),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('es'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: appSupportedLocales,
+          home: widget,
+        ),
       ),
     );
   }
