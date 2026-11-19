@@ -8,6 +8,8 @@ import 'package:wallet_domain/wallet_domain.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository;
 
+class MockMovementsRepository extends Mock implements MovementsRepository;
+
 const testConfig = AppConfig(environment: AppEnvironment.development);
 
 extension PumpApp on WidgetTester {
@@ -15,6 +17,7 @@ extension PumpApp on WidgetTester {
   Future<void> pumpApp(
     Widget widget, {
     AuthRepository? authRepository,
+    MovementsRepository? movementsRepository,
     AppConfig config = testConfig,
   }) {
     return pumpWidget(
@@ -23,6 +26,9 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(value: config),
           RepositoryProvider<AuthRepository>.value(
             value: authRepository ?? MockAuthRepository(),
+          ),
+          RepositoryProvider<MovementsRepository>.value(
+            value: movementsRepository ?? MockMovementsRepository(),
           ),
         ],
         child: MaterialApp(

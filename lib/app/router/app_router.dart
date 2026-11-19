@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:ligo_wallet/app/view/splash_page.dart';
 import 'package:ligo_wallet/features/auth/presentation/login/view/login_page.dart';
 import 'package:ligo_wallet/features/auth/presentation/session/session_bloc.dart';
-import 'package:ligo_wallet/features/movements/presentation/view/movements_page.dart';
+import 'package:ligo_wallet/features/movements/presentation/detail/view/movement_detail_page.dart';
+import 'package:ligo_wallet/features/movements/presentation/list/view/movements_page.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Rutas de la app.
@@ -17,6 +18,10 @@ abstract final class AppRoutes {
 
   /// Listado de movimientos (pantalla principal autenticada).
   static const movements = '/movements';
+
+  /// Detalle de un movimiento.
+  static String movementDetail(String id) =>
+      '$movements/${Uri.encodeComponent(id)}';
 }
 
 /// Guard de sesión como función pura (testeable sin widgets).
@@ -60,6 +65,13 @@ GoRouter createAppRouter(
     GoRoute(
       path: AppRoutes.movements,
       builder: (context, state) => const MovementsPage(),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (context, state) =>
+              MovementDetailPage(movementId: state.pathParameters['id']!),
+        ),
+      ],
     ),
   ],
 );

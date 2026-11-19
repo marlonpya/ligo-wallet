@@ -8,6 +8,7 @@ import 'package:ligo_wallet/app/app.dart';
 import 'package:ligo_wallet/app/config/app_config.dart';
 import 'package:wallet_api/wallet_api.dart';
 import 'package:wallet_data/wallet_data.dart';
+import 'package:wallet_domain/wallet_domain.dart' show Authenticated;
 import 'package:wallet_storage/wallet_storage.dart';
 
 /// Observer de blocs que solo registra **tipos**, nunca el contenido de
@@ -54,29 +55,75 @@ Future<void> bootstrap(AppEnvironment environment) async {
   final tokenProvider = sessionTokenProvider(storage);
 
   final WalletApi api;
-  DemoCredentials? demoCredentials;
+  DemoBackend? demoBackend;
   switch (environment) {
     case AppEnvironment.development:
-      api = FakeWalletApi(tokenProvider: tokenProvider);
-      demoCredentials = const DemoCredentials(
-        email: FakeWalletApi.demoEmail,
-        password: FakeWalletApi.demoPassword,
-      );
+      final fakeApi = FakeWalletApi(tokenProvider: tokenProvider);
+      api = fakeApi;
+      demoBackend = _demoBackendFor(fakeApi);
     case AppEnvironment.staging:
     case AppEnvironment.production:
       api = DioWalletApi(baseUrl: _apiBaseUrl(), tokenProvider: tokenProvider);
   }
 
   final authRepository = DefaultAuthRepository(api: api, storage: storage);
+  final movementsRepository = DefaultMovementsRepository(
+    api: api,
+    sessionExpiryHandler: authRepository,
+  );
+
+  if (demoBackend != null) {
+    final scenario = demoBackend.scenario;
+    // El backend fake limpia la expiración en el siguiente login; el panel
+    // vuelve a "Normal" para reflejarlo.
+    authRepository.sessionStatus.listen((status) {
+      if (status is Authenticated &&
+          scenario.value == DemoScenario.sessionExpired) {
+        scenario.value = DemoScenario.normal;
+      }
+    });
+  }
 
   runApp(
     App(
-      config: AppConfig(
-        environment: environment,
-        demoCredentials: demoCredentials,
-      ),
+      config: AppConfig(environment: environment, demoBackend: demoBackend),
       authRepository: authRepository,
+      movementsRepository: movementsRepository,
     ),
+  );
+}
+
+/// Conecta el panel de escenarios de la UI con la configuración del backend
+/// fake. La UI solo conoce [DemoScenario]; esto lo traduce a
+/// [FakeBackendConfig].
+DemoBackend _demoBackendFor(FakeWalletApi fakeApi) {
+  final config = fakeApi.config;
+  final defaultLatency = config.latency;
+  final scenario = ValueNotifier(DemoScenario.normal);
+
+  void apply() {
+    final value = scenario.value;
+    config
+      ..latency = value == DemoScenario.slowNetwork
+          ? const Duration(seconds: 3)
+          : defaultLatency
+      ..emptyMovements = value == DemoScenario.empty
+      ..sessionExpired = value == DemoScenario.sessionExpired
+      ..failureMode = switch (value) {
+        DemoScenario.networkError => FakeFailureMode.network,
+        DemoScenario.serverError => FakeFailureMode.server,
+        DemoScenario.malformedResponse => FakeFailureMode.malformed,
+        _ => FakeFailureMode.none,
+      };
+  }
+
+  scenario.addListener(apply);
+  return DemoBackend(
+    credentials: const DemoCredentials(
+      email: FakeWalletApi.demoEmail,
+      password: FakeWalletApi.demoPassword,
+    ),
+    scenario: scenario,
   );
 }
 

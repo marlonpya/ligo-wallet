@@ -39,16 +39,9 @@ void main() {
     );
   });
 
-  test('AppConfig y DemoCredentials comparan por valor', () {
+  test('DemoCredentials compara por valor', () {
     const demo = DemoCredentials(email: 'a', password: 'b');
 
-    expect(
-      const AppConfig(
-        environment: AppEnvironment.development,
-        demoCredentials: demo,
-      ),
-      isNot(const AppConfig(environment: AppEnvironment.development)),
-    );
     expect(demo, isNot(const DemoCredentials(email: 'a', password: 'c')));
   });
 }

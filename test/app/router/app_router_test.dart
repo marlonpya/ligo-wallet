@@ -46,4 +46,24 @@ void main() {
       expect(sessionRedirect(authenticated, AppRoutes.movements), isNull);
     });
   });
+
+  group('AppRoutes.movementDetail', () {
+    test('anida el id bajo /movements', () {
+      expect(AppRoutes.movementDetail('mov_001'), '/movements/mov_001');
+    });
+
+    test('codifica caracteres especiales del id', () {
+      expect(AppRoutes.movementDetail('a/b c'), '/movements/a%2Fb%20c');
+    });
+
+    test('el detalle requiere sesión', () {
+      expect(
+        sessionRedirect(
+          const SessionUnauthenticated(),
+          AppRoutes.movementDetail('mov_001'),
+        ),
+        AppRoutes.login,
+      );
+    });
+  });
 }

@@ -113,11 +113,14 @@ void main() {
       await tester.pumpApp(
         const LoginPage(),
         authRepository: repository,
-        config: const AppConfig(
+        config: AppConfig(
           environment: AppEnvironment.development,
-          demoCredentials: DemoCredentials(
-            email: 'demo@ligo.pe',
-            password: 'x',
+          demoBackend: DemoBackend(
+            credentials: const DemoCredentials(
+              email: 'demo@ligo.pe',
+              password: 'x',
+            ),
+            scenario: ValueNotifier(DemoScenario.normal),
           ),
         ),
       );

@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ligo_wallet/app/app.dart';
 import 'package:ligo_wallet/app/view/splash_page.dart';
 import 'package:ligo_wallet/features/auth/presentation/login/view/login_page.dart';
-import 'package:ligo_wallet/features/movements/presentation/view/movements_page.dart';
+import 'package:ligo_wallet/features/movements/presentation/detail/view/movement_detail_page.dart';
+import 'package:ligo_wallet/features/movements/presentation/list/view/movements_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:wallet_domain/wallet_domain.dart';
@@ -17,10 +18,14 @@ void main() {
   const user = User(id: 'u_001', name: 'Ronald Castillo');
 
   late AuthRepository repository;
+  late MovementsRepository movementsRepository;
   late StreamController<SessionStatus> statusController;
 
   setUp(() {
     repository = MockAuthRepository();
+    movementsRepository = MockMovementsRepository();
+    when(movementsRepository.getMovements)
+        .thenAnswer((_) async => const Ok([]));
     statusController = StreamController<SessionStatus>.broadcast();
     when(() => repository.sessionStatus)
         .thenAnswer((_) => statusController.stream);
@@ -32,7 +37,11 @@ void main() {
     tester.platformDispatcher.localesTestValue = const [Locale('es')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     await tester.pumpWidget(
-      App(config: testConfig, authRepository: repository),
+      App(
+        config: testConfig,
+        authRepository: repository,
+        movementsRepository: movementsRepository,
+      ),
     );
   }
 
@@ -158,7 +167,11 @@ void main() {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
 
     await tester.pumpWidget(
-      App(config: testConfig, authRepository: repository),
+      App(
+        config: testConfig,
+        authRepository: repository,
+        movementsRepository: movementsRepository,
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -174,10 +187,41 @@ void main() {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
 
     await tester.pumpWidget(
-      App(config: testConfig, authRepository: repository),
+      App(
+        config: testConfig,
+        authRepository: repository,
+        movementsRepository: movementsRepository,
+      ),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Sign in'), findsOneWidget);
+  });
+
+  testWidgets('tocar un movimiento abre su detalle y se puede volver', (
+    tester,
+  ) async {
+    when(repository.restoreSession)
+        .thenAnswer((_) async => const Authenticated(user));
+    when(movementsRepository.getMovements)
+        .thenAnswer((_) async => Ok(allMovements));
+    when(() => movementsRepository.getMovementById('mov_002'))
+        .thenAnswer((_) async => Ok(salary));
+    await pumpApp(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('movementTile_mov_002')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MovementDetailPage), findsOneWidget);
+    expect(find.text('Detalle del movimiento'), findsOneWidget);
+
+    // material_ui tiene su propio BackButton; `tester.pageBack()` busca el de
+    // flutter/material.
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MovementsPage), findsOneWidget);
+    expect(find.byType(MovementDetailPage), findsNothing);
   });
 }

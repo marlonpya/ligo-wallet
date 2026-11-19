@@ -30,6 +30,7 @@ dependencies:
   # wallet_api, wallet_data y wallet_storage solo se importan en
   # lib/bootstrap.dart (composición de dependencias). Lo verifica
   # test/architecture_test.dart. El resto de la app solo ve wallet_domain.
+  stream_transform: ^2.1.2
   wallet_api:
     path: packages/wallet_api
   wallet_data:

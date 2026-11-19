@@ -116,5 +116,170 @@
                 "type": "String"
             }
         }
+    },
+    "searchHint": "Search by description",
+    "@searchHint": {
+        "description": "Hint of the movements search field"
+    },
+    "clearSearchTooltip": "Clear search",
+    "@clearSearchTooltip": {
+        "description": "Tooltip of the clear search button"
+    },
+    "filterAll": "All",
+    "@filterAll": {
+        "description": "Filter option: all movements"
+    },
+    "filterIncome": "Income",
+    "@filterIncome": {
+        "description": "Filter option: income only"
+    },
+    "filterExpense": "Expenses",
+    "@filterExpense": {
+        "description": "Filter option: expenses only"
+    },
+    "refreshTooltip": "Refresh",
+    "@refreshTooltip": {
+        "description": "Tooltip of the refresh button"
+    },
+    "loadingMovements": "Loading movements",
+    "@loadingMovements": {
+        "description": "Semantics label of the skeleton list"
+    },
+    "emptyMovementsTitle": "No movements yet",
+    "@emptyMovementsTitle": {
+        "description": "Title when the account has no movements"
+    },
+    "emptyMovementsMessage": "When you send or receive money, you will see it here.",
+    "@emptyMovementsMessage": {
+        "description": "Body when the account has no movements"
+    },
+    "noResultsTitle": "No results",
+    "@noResultsTitle": {
+        "description": "Title when search and filter match nothing"
+    },
+    "noResultsMessage": "No movements match your search or filter.",
+    "@noResultsMessage": {
+        "description": "Body when search and filter match nothing"
+    },
+    "clearFiltersButton": "Clear filters",
+    "@clearFiltersButton": {
+        "description": "Button that resets search and filter"
+    },
+    "errorTitle": "We couldn't load your movements",
+    "@errorTitle": {
+        "description": "Title of the full screen error"
+    },
+    "retryButton": "Retry",
+    "@retryButton": {
+        "description": "Retry action"
+    },
+    "refreshFailedMessage": "Couldn't refresh: {reason}",
+    "@refreshFailedMessage": {
+        "description": "Snackbar when a refresh fails while data is shown",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "statusCompleted": "Completed",
+    "@statusCompleted": {
+        "description": "Movement status completed"
+    },
+    "statusPending": "Pending",
+    "@statusPending": {
+        "description": "Movement status pending"
+    },
+    "statusFailed": "Failed",
+    "@statusFailed": {
+        "description": "Movement status failed"
+    },
+    "statusUnknown": "Unknown",
+    "@statusUnknown": {
+        "description": "Movement status not recognized"
+    },
+    "typeIncome": "Income",
+    "@typeIncome": {
+        "description": "Movement type income"
+    },
+    "typeExpense": "Expense",
+    "@typeExpense": {
+        "description": "Movement type expense"
+    },
+    "movementDetailTitle": "Movement detail",
+    "@movementDetailTitle": {
+        "description": "Title of the detail page"
+    },
+    "detailType": "Type",
+    "@detailType": {
+        "description": "Detail row label: type"
+    },
+    "detailStatus": "Status",
+    "@detailStatus": {
+        "description": "Detail row label: status"
+    },
+    "detailDate": "Date",
+    "@detailDate": {
+        "description": "Detail row label: date"
+    },
+    "detailCurrency": "Currency",
+    "@detailCurrency": {
+        "description": "Detail row label: currency"
+    },
+    "detailId": "Operation ID",
+    "@detailId": {
+        "description": "Detail row label: id"
+    },
+    "detailDateUnavailable": "Not available",
+    "@detailDateUnavailable": {
+        "description": "Shown when the movement has no date"
+    },
+    "detailNotFoundTitle": "Movement not found",
+    "@detailNotFoundTitle": {
+        "description": "Detail page title when the id does not exist"
+    },
+    "backButton": "Back to movements",
+    "@backButton": {
+        "description": "Button that goes back to the list"
+    },
+    "demoPanelTooltip": "Demo scenarios",
+    "@demoPanelTooltip": {
+        "description": "Tooltip of the demo panel button"
+    },
+    "demoPanelTitle": "Fake backend scenario",
+    "@demoPanelTitle": {
+        "description": "Title of the demo panel"
+    },
+    "demoPanelHint": "Only in the development flavor. Choosing one reloads the list.",
+    "@demoPanelHint": {
+        "description": "Hint of the demo panel"
+    },
+    "demoScenarioNormal": "Normal",
+    "@demoScenarioNormal": {
+        "description": "Demo scenario"
+    },
+    "demoScenarioSlow": "Slow network (3 s)",
+    "@demoScenarioSlow": {
+        "description": "Demo scenario"
+    },
+    "demoScenarioEmpty": "Empty account",
+    "@demoScenarioEmpty": {
+        "description": "Demo scenario"
+    },
+    "demoScenarioNetworkError": "No connection",
+    "@demoScenarioNetworkError": {
+        "description": "Demo scenario"
+    },
+    "demoScenarioServerError": "Server error (500)",
+    "@demoScenarioServerError": {
+        "description": "Demo scenario"
+    },
+    "demoScenarioMalformed": "Malformed response",
+    "@demoScenarioMalformed": {
+        "description": "Demo scenario"
+    },
+    "demoScenarioSessionExpired": "Expired session (401)",
+    "@demoScenarioSessionExpired": {
+        "description": "Demo scenario"
     }
 }

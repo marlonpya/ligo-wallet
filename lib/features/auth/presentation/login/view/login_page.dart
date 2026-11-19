@@ -29,7 +29,7 @@ class LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
-    final demo = context.read<AppConfig>().demoCredentials;
+    final demo = context.read<AppConfig>().demoBackend?.credentials;
 
     return Scaffold(
       body: SafeArea(
