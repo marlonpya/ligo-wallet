@@ -42,6 +42,7 @@ jobs:
       flutter_version: "3.50.x"
       working_directory: packages/wallet_api
       min_coverage: 80
+      coverage_excludes: "**/*.g.dart"
 
   wallet_storage:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
