@@ -1,5 +1,5 @@
 /// Datasource HTTP de la billetera: contrato `WalletApi`, cliente real
-/// (dio + retrofit), backend fake, DTOs y excepciones tipadas.
+/// (dio), backend fake, DTOs y excepciones tipadas.
 library;
 
 export 'src/client/dio_wallet_api.dart';

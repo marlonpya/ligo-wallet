@@ -1,14 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
 import 'package:wallet_api/src/client/wallet_api.dart';
-import 'package:wallet_api/src/client/wallet_rest_client.dart';
 import 'package:wallet_api/src/exceptions/api_exception.dart';
 import 'package:wallet_api/src/interceptors/auth_interceptor.dart';
-import 'package:wallet_api/src/interceptors/error_interceptor.dart';
 import 'package:wallet_api/src/models/auth_dtos.dart';
 import 'package:wallet_api/src/models/movement_dto.dart';
 
-/// [WalletApi] sobre HTTP real (dio + retrofit).
+/// [WalletApi] sobre HTTP real con dio.
+///
+/// Se usa dio directamente, sin retrofit: con dos endpoints, la generación de
+/// código no aporta claridad y suma un paso de build. Lo que sí aporta dio son
+/// los interceptores (token), la cancelación y, a futuro, el certificate
+/// pinning y la renovación de token con `QueuedInterceptor`.
 ///
 /// No agrega `LogInterceptor`: loguear peticiones expondría el header
 /// `Authorization` y datos del usuario.
@@ -31,36 +34,54 @@ final class DioWalletApi implements WalletApi {
       ),
     );
     if (httpClientAdapter != null) dio.httpClientAdapter = httpClientAdapter;
-    // El orden importa: primero se adjunta el token y, al volver con error,
-    // el ErrorInterceptor tipa la excepción.
-    dio.interceptors.addAll([
-      AuthInterceptor(tokenProvider),
-      ErrorInterceptor(),
-    ]);
-    return DioWalletApi._(WalletRestClient(dio));
+    dio.interceptors.add(AuthInterceptor(tokenProvider));
+    return DioWalletApi._(dio);
   }
 
-  new _(this._client);
+  new _(this._dio);
 
-  final WalletRestClient _client;
+  static const _loginPath = '/auth/login';
+  static const _movementsPath = '/movements';
+
+  /// Marca de petición pública: el login no debe llevar un token previo.
+  static final Options _publicRequest = Options(
+    extra: {AuthInterceptor.requiresAuthKey: false},
+  );
+
+  final Dio _dio;
 
   @override
-  Future<LoginResponseDto> login(LoginRequestDto request) =>
-      _guard(() => _client.login(request));
+  Future<LoginResponseDto> login(LoginRequestDto request) => _guard(() async {
+    final response = await _dio.post<Object?>(
+      _loginPath,
+      data: request.toJson(),
+      options: _publicRequest,
+    );
+    return LoginResponseDto.fromJson(_asJsonObject(response.data));
+  });
 
   @override
-  Future<List<MovementDto>> getMovements() => _guard(_client.getMovements);
+  Future<List<MovementDto>> getMovements() => _guard(() async {
+    final response = await _dio.get<Object?>(_movementsPath);
+    final data = response.data;
+    if (data is! List<Object?>) throw const ApiMalformedResponseException();
+    return data
+        .map((item) => MovementDto.fromJson(_asJsonObject(item)))
+        .toList(growable: false);
+  });
 
-  // Garantiza que solo salgan ApiException: desenvuelve lo que dejó el
-  // ErrorInterceptor y trata los fallos de parseo como contrato roto.
+  static Map<String, dynamic> _asJsonObject(Object? value) {
+    if (value is Map<String, dynamic>) return value;
+    throw const ApiMalformedResponseException();
+  }
+
+  // Punto único de traducción de errores HTTP: garantiza que solo salgan
+  // ApiException y trata cualquier fallo de parseo como contrato roto.
   Future<T> _guard<T>(Future<T> Function() request) async {
     try {
       return await request();
     } on DioException catch (exception) {
-      final error = exception.error;
-      throw error is ApiException
-          ? error
-          : ApiException.fromDioException(exception);
+      throw ApiException.fromDioException(exception);
     } on ApiException {
       rethrow;
     } on Object {

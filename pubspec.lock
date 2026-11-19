@@ -185,14 +185,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  code_builder:
-    dependency: transitive
-    description:
-      name: code_builder
-      sha256: "811709c1badd02fc054039a13f66e0db1961865f9a314175f68c3eaeebec786f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.13.0"
   collection:
     dependency: transitive
     description:
@@ -765,14 +757,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.6"
-  protobuf:
-    dependency: transitive
-    description:
-      name: protobuf
-      sha256: "13b6717366aa7ec3792dd62c19c7d33a785708224365f2db23c5ca01f1c1a0f2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.0"
   provider:
     dependency: transitive
     description:
@@ -821,22 +805,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  retrofit:
-    dependency: transitive
-    description:
-      name: retrofit
-      sha256: d700c1e7599bc6327cbe19ec7a2c87b595f6063ce888e8015f30cab655972331
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.10.0"
-  retrofit_generator:
-    dependency: transitive
-    description:
-      name: retrofit_generator
-      sha256: "756d252a6089e18209e5cf515f18784b80819b1a09abcc2ba3dcdafeb0246004"
-      url: "https://pub.dev"
-    source: hosted
-    version: "10.3.3"
   shelf:
     dependency: transitive
     description:
