@@ -10,16 +10,45 @@ on:
       - main
     paths:
       - "pubspec.yaml"
+      - "pubspec.lock"
+      - "packages/*/pubspec.yaml"
       - ".github/workflows/license_check.yaml"
   push:
     branches:
       - main
     paths:
       - "pubspec.yaml"
+      - "pubspec.lock"
+      - "packages/*/pubspec.yaml"
       - ".github/workflows/license_check.yaml"
 
+# No se usa el workflow reutilizable de very_good_workflows porque corre
+# `dart pub get` sin Flutter, y con pub workspaces la raíz exige el SDK de
+# Flutter. Se ejecuta el mismo chequeo (very_good_cli) con Flutter instalado.
 jobs:
   license_check:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1
-    with:
-      allowed: "MIT,BSD-3-Clause,BSD-2-Clause,Apache-2.0"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.50.x"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install Very Good CLI
+        run: dart pub global activate very_good_cli
+
+      # Revisa dependencias directas y transitivas de todo el workspace.
+      # pubspec_lock_parse se excluye: solo llega como dependencia de
+      # bloc_lint (herramienta de desarrollo) y no se incluye en la app.
+      - name: Check licenses
+        run: >
+          very_good packages check licenses
+          --allowed="MIT,BSD-3-Clause,BSD-2-Clause,Apache-2.0"
+          --dependency-type="direct-main,transitive"
+          --skip-packages="pubspec_lock_parse"
