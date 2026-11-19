@@ -1,4 +1,6 @@
-/// Secure storage wrapper for session tokens.
+/// Almacenamiento seguro de la sesión (token + usuario) sobre
+/// `flutter_secure_storage`.
 library;
 
-export 'src/wallet_storage.dart';
+export 'src/session_storage.dart';
+export 'src/stored_session.dart';
