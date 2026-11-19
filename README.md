@@ -87,6 +87,23 @@ flutter run --flavor production --target lib/main_production.dart \
 
 > No hay un backend real detrás del contrato del reto: `staging`/`production` compilan y están cubiertos por tests contra un servidor HTTP simulado, pero solo `development` es navegable de punta a punta.
 
+### Build de release (Android)
+
+El release **exige un keystore propio** (no se firma con la clave de debug). Se pasa por variables de entorno, nunca en el repo:
+
+```sh
+export ANDROID_KEYSTORE_PATH=/ruta/upload.jks
+export ANDROID_KEYSTORE_ALIAS=upload
+export ANDROID_KEYSTORE_PASSWORD=...
+export ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD=...
+
+flutter build appbundle --flavor production --target lib/main_production.dart \
+  --dart-define=API_BASE_URL=https://api.ejemplo.com \
+  --obfuscate --split-debug-info=build/symbols
+```
+
+R8 (minificación) está activo en release; los símbolos de `--split-debug-info` se guardan fuera del artefacto para desofuscar crashes.
+
 ### Panel de escenarios (demo)
 
 En `development`, el ícono 🧪 de la barra abre un panel para cambiar la respuesta del backend fake. Al elegir un escenario se recarga la lista:
@@ -348,7 +365,8 @@ Ver [docs/USO_DE_IA.md](docs/USO_DE_IA.md).
 
 ## Limitaciones y próximos pasos
 
-- **Dispositivos**: desarrollado en Windows. Verificado de punta a punta en **web** y compilado para **Android**; **iOS** no se pudo compilar ni probar (requiere macOS/Xcode).
+- **Dispositivos**: desarrollado en Windows. Verificado de punta a punta en **web**. En **Android** compilan el APK debug y el release ofuscado con R8, pero no se probó en un dispositivo. **iOS** no se pudo compilar ni probar (requiere macOS/Xcode).
+- **Kotlin integrado de AGP 9**: el proyecto usa `android.builtInKotlin=false` (migración automática de Flutter). Pendiente migrar según la [guía oficial](https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers).
 - **Caché offline**: fuera de alcance. Siguiente paso: `drift` como fuente de verdad local (en web requiere `sqlite3.wasm` + worker) con *stale-while-revalidate*.
 - **Paginación** del listado cuando el backend la ofrezca.
 - **Integration test** (`integration_test`) del flujo login → listado → detalle sobre el flavor `development`.

@@ -46,7 +46,7 @@ Las decisiones de arquitectura y de alcance fueron mías; la IA propuso opciones
 - **Almacenamiento en web**: inspeccioné `localStorage` para confirmar que el token no está en texto plano y que el logout borra las claves. Así encontré que la clave de cifrado vive en el mismo `localStorage` (documentado como riesgo).
 - **APIs de terceros**: cuando una API era dudosa o nueva (opciones de `flutter_secure_storage` v11, tipos de `DioException`, delegates de `material_ui`, sintaxis de Dart 3.14), se verificó leyendo el código fuente del paquete instalado, no de memoria.
 - **CI**: cada push se verificó en GitHub Actions. Dos fallos reales (jobs de Dart puro y chequeo de licencias, ambos incompatibles con pub workspaces) se diagnosticaron desde los logs.
-- **Android**: compilación del APK del flavor `development`. **No** probé en un dispositivo físico ni en iOS (trabajo en Windows).
+- **Android**: compilación del APK debug y del release ofuscado (R8). Al hacerlo aparecieron tres desfases de la plantilla con Flutter 3.50 (versión de AGP, archivo de ProGuard y un `proguard-rules.pro` inexistente), corregidos. **No** probé en un dispositivo físico ni en iOS (trabajo en Windows).
 
 ## ¿Qué riesgos identifiqué?
 
