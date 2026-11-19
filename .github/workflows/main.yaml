@@ -1,0 +1,55 @@
+name: ligo_wallet
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Un job por unidad del workspace: la app y cada paquete se analizan,
+# formatean y testean por separado (con su propio reporte de cobertura).
+jobs:
+  semantic-pull-request:
+    if: github.event_name == 'pull_request'
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/semantic_pull_request.yml@v1
+
+  app:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      run_bloc_lint: true
+      min_coverage: 80
+
+  wallet_domain:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    with:
+      dart_sdk: "3.14.0"
+      working_directory: packages/wallet_domain
+      min_coverage: 80
+
+  wallet_api:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    with:
+      dart_sdk: "3.14.0"
+      working_directory: packages/wallet_api
+      min_coverage: 80
+
+  wallet_storage:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      working_directory: packages/wallet_storage
+      min_coverage: 80
+
+  wallet_data:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      working_directory: packages/wallet_data
+      min_coverage: 80
