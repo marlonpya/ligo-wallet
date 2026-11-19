@@ -246,6 +246,53 @@ sequenceDiagram
 | **pub workspaces + 4 paquetes** | Las fronteras de capa son de compilación, no solo de convención | Módulos Gradle · Swift Packages |
 | **`material_ui`** (Material desacoplado del SDK) | Es lo que genera la plantilla actual de Very Good CLI | — |
 
+### Bloc y no Riverpod
+
+Bloc, Riverpod y Provider son **gestores de estado**, no arquitecturas: cualquiera de los tres encaja en las capas de arriba, que siguen la [guía oficial de arquitectura de Flutter](https://docs.flutter.dev/app-architecture) (Views + ViewModels sobre Repositories + Services; aquí el Bloc es el ViewModel y `WalletApi` el Service). Se eligió Bloc por criterio, no por moda:
+
+| Criterio | Bloc | Riverpod 3 |
+|---|---|---|
+| Flujo MVI (intención → estado) | Explícito: cada acción es un evento sellado y queda en el `BlocObserver` | Métodos del `Notifier`; el "intent" es una convención |
+| Concurrencia de eventos | `droppable`, `restartable` y `debounce` por evento (doble envío, búsqueda) | A mano (`Timer`, cancelación con `ref.onDispose`) |
+| DI | Explícita en `bootstrap.dart`, el grafo en un solo archivo | Integrada en los providers (DI, caché y vida útil juntos) |
+| Tests | `bloc_test`: dado un estado, al emitir un evento, se esperan estos estados | `ProviderContainer.test` con *overrides*, igual de bueno |
+| Reglas estáticas | `bloc_lint` en CI | `riverpod_lint` |
+
+Riverpod sería la opción si la app compartiera mucho estado derivado entre pantallas o necesitara caché por parámetros (`family`). Con dos features y flujos de eventos (login, búsqueda con debounce, refresco), Bloc deja la intención más visible. Cambiarlo no toca dominio ni datos: solo `presentation/`.
+
+Lo que **no** depende del gestor elegido, y aquí se verifica con tests:
+
+- **Sin estado global mutable**: ni `static` mutables ni variables top-level. Un `static` no avisa a la UI, se filtra entre tests y sobrevive al logout. El estado vive en los Blocs y llega por DI.
+- **Mismo código en todas las plataformas**: ninguna capa importa `dart:io` ni `dart:html`. Lo que cambia por plataforma (Keychain/Keystore/WebCrypto) queda detrás de un plugin en `wallet_storage`.
+- **El estado es de memoria**: muere con el proceso. Lo que debe sobrevivir (la sesión) se persiste aparte en `wallet_storage`; la caché offline con `drift` queda como siguiente paso.
+
+### Política de dependencias (pub.dev)
+
+pub.dev mezcla paquetes excelentes con otros que rompen su API entre versiones. Para agregar una dependencia, la regla es:
+
+1. **Publisher verificado** (`dart.dev`, `flutter.dev`, `google.dev` o el mantenedor reconocido del paquete), con puntuación de pub alta y un release en el último año.
+2. **Licencia permisiva** (MIT/BSD/Apache). La verifica el CI ([`license_check.yaml`](.github/workflows/license_check.yaml)).
+3. **Versiones fijadas** en `pubspec.lock` (versionado). Dependabot propone las subidas en un PR propio, que pasa por el CI completo.
+4. **Aislada detrás de una interfaz propia** si su API es volátil o de infraestructura: dio solo existe en `wallet_api` y `flutter_secure_storage` solo en `wallet_storage`, y la app no los importa (lo verifica `architecture_test.dart`). Cambiar de paquete no toca la app.
+
+Estado al 2026-11-19 (pub.dev; los puntos están sobre 160):
+
+| Paquete | Publisher | Versión fijada | Puntos | Dónde vive |
+|---|---|---|---:|---|
+| `flutter_bloc` / `bloc` / `bloc_concurrency` | bloclibrary.dev | 9.1.1 / 9.2.1 / 0.3.0 | 160 | presentación |
+| `go_router` | flutter.dev | 18.1.4 | 150 | `lib/app/router` |
+| `material_ui` | flutter.dev | 1.11.1 | 160 | presentación |
+| `intl` | dart.dev | 0.20.3 | 160 | presentación (formatos) |
+| `stream_transform` | tools.dart.dev | 2.1.2 | 160 | transformers de eventos |
+| `equatable` | fluttercommunity.dev | 3.0.0 | 160 | dominio y estados |
+| `dio` | flutter.cn | 5.11.1 | 160 | solo `wallet_api` |
+| `json_annotation` / `json_serializable` | google.dev | 4.12.0 / 6.15.2 | 150 / 160 | solo `wallet_api` |
+| `flutter_secure_storage` | steenbakker.dev | 11.2.0 | 160 | solo `wallet_storage` |
+| `bloc_test` / `mocktail` / `very_good_analysis` | bloclibrary.dev / felangel.dev / verygood.ventures | — | 160 | desarrollo |
+| `bloc_lint` / `bloc_tools` | bloclibrary.dev | 0.4.3 / **0.1.0-dev.25** | 150 / 160 | desarrollo |
+
+**Excepción aceptada:** `bloc_tools` es prerelease (no tiene versión estable) y solo aporta el comando `bloc lint` en desarrollo. No entra al binario: si rompe, se cae una verificación de CI, no la app.
+
 ---
 
 ## Manejo de estado y errores
@@ -278,7 +325,7 @@ sequenceDiagram
 
 ## Testing
 
-**278 tests** repartidos por capa, todos con mocks (`mocktail`) en las fronteras:
+**280 tests** repartidos por capa, todos con mocks (`mocktail`) en las fronteras:
 
 | Unidad | Tests | Cobertura | Qué cubre |
 |---|---:|---:|---|
@@ -286,13 +333,13 @@ sequenceDiagram
 | `wallet_api` | 42 | 100 %¹ | Cliente dio contra un servidor simulado (headers, 401/404/500, red, JSON inválido), DTOs, backend fake |
 | `wallet_storage` | 11 | 100 % | Lectura/escritura/borrado, sesión incompleta, errores de plataforma, `toString` sin token |
 | `wallet_data` | 52 | 100 % | Mappers (montos, monedas, fechas), repositorios con datasource mockeado, 401 → expiración, carrera de 401 |
-| App | 116 | ~99 %² | Casos de uso, Blocs con `bloc_test`, guard del router, widgets de cada estado, flujos completos (login, logout, expiración, detalle, idioma) |
+| App | 118 | ~99 %² | Casos de uso, Blocs con `bloc_test`, guard del router, widgets de cada estado, flujos completos (login, logout, expiración, detalle, idioma) |
 
 ¹ Sin contar código generado. ² Sin contar l10n generado; los paquetes miden su cobertura por separado.
 
 **Casos borde cubiertos:** lista vacía · búsqueda sin resultados · filtro + búsqueda combinados · token expirado · error de red y retry · refresco fallido con datos · doble envío · 401 concurrentes · respuesta malformada · deep link sin caché · idioma no soportado → español.
 
-**Regla de arquitectura como test:** `test/architecture_test.dart` falla si un archivo fuera de `bootstrap.dart` importa los paquetes de datos, si la app importa dio/http, o si aparece un `print`.
+**Regla de arquitectura como test:** `test/architecture_test.dart` falla si un archivo fuera de `bootstrap.dart` importa los paquetes de datos, si la app importa dio/http, si aparece un `print`, si alguna capa importa `dart:io`/`dart:html` (rompería web) o si hay estado global mutable (`static` no `final` o variables top-level).
 
 El CI ([`.github/workflows/main.yaml`](.github/workflows/main.yaml)) corre formato, análisis, `bloc_lint` y tests con umbral de cobertura en **un job por paquete**, más un chequeo de licencias de todas las dependencias (directas y transitivas).
 
