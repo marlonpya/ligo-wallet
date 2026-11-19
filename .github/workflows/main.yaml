@@ -14,6 +14,9 @@ on:
 
 # Un job por unidad del workspace: la app y cada paquete se analizan,
 # formatean y testean por separado (con su propio reporte de cobertura).
+# Todos usan el workflow de Flutter, incluso los paquetes Dart puro: con pub
+# workspaces, resolver un paquete resuelve todo el workspace, y la raíz
+# depende del SDK de Flutter.
 jobs:
   semantic-pull-request:
     if: github.event_name == 'pull_request'
@@ -27,16 +30,16 @@ jobs:
       min_coverage: 80
 
   wallet_domain:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
     with:
-      dart_sdk: "3.14.0"
+      flutter_version: "3.50.x"
       working_directory: packages/wallet_domain
       min_coverage: 80
 
   wallet_api:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
     with:
-      dart_sdk: "3.14.0"
+      flutter_version: "3.50.x"
       working_directory: packages/wallet_api
       min_coverage: 80
 
