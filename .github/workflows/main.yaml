@@ -27,14 +27,14 @@ jobs:
       min_coverage: 80
 
   wallet_domain:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v2
     with:
       dart_sdk: "3.14.0"
       working_directory: packages/wallet_domain
       min_coverage: 80
 
   wallet_api:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v2
     with:
       dart_sdk: "3.14.0"
       working_directory: packages/wallet_api
