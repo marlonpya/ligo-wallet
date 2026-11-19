@@ -73,6 +73,8 @@ class _AppViewState extends State<AppView> {
       listener: (context, _) => _showSessionExpired(),
       child: MaterialApp.router(
         onGenerateTitle: (context) => context.l10n.appTitle,
+        // El banner "DEBUG" tapa las acciones del AppBar (logout).
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         scaffoldMessengerKey: _messengerKey,
