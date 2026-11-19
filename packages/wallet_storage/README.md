@@ -1,66 +1,26 @@
-# Wallet Storage
+# wallet_storage
 
-[![style: very good analysis][very_good_analysis_badge]][very_good_analysis_link]
-[![Powered by Mason](https://img.shields.io/endpoint?url=https%3A%2F%2Ftinyurl.com%2Fmason-badge)](https://github.com/felangel/mason)
-[![License: MIT][license_badge]][license_link]
+Persistencia segura de la sesión (token + id y nombre del usuario) sobre `flutter_secure_storage`.
 
-Secure storage wrapper for session tokens.
+## Contenido
 
-## Installation 💻
+| Archivo | Qué define |
+|---|---|
+| `session_storage.dart` | Contrato `SessionStorage` (`read`, `write`, `clear`) y su implementación `SecureSessionStorage`. Los errores de plataforma se envuelven en `SessionStorageException` |
+| `stored_session.dart` | `StoredSession`. Su `toString()` oculta el token |
 
-**❗ In order to start using Wallet Storage you must have the [Flutter SDK][flutter_install_link] installed on your machine.**
+## Decisiones
 
-Install via `flutter pub add`:
+- **Keychain / Keystore** según plataforma. En iOS con `KeychainAccessibility.unlocked_this_device`: el token solo se lee con el equipo desbloqueado y no viaja en backups.
+- Una sesión **incompleta** (por ejemplo, una escritura interrumpida) se trata como "sin sesión".
+- Se guardan el id y el nombre del usuario porque el contrato no tiene `GET /me` para restaurar la sesión al reabrir la app.
 
-```sh
-dart pub add wallet_storage
-```
+## Riesgo en web
 
----
+En web, `flutter_secure_storage` cifra con WebCrypto pero guarda la clave en el mismo `localStorage`. No equivale a Keychain/Keystore; ver la sección de seguridad del README principal.
 
-## Continuous Integration 🤖
-
-Wallet Storage comes with a built-in [GitHub Actions workflow][github_actions_link] powered by [Very Good Workflows][very_good_workflows_link] but you can also add your preferred CI/CD solution.
-
-Out of the box, on each pull request and push, the CI `formats`, `lints`, and `tests` the code. This ensures the code remains consistent and behaves correctly as you add functionality or make changes. The project uses [Very Good Analysis][very_good_analysis_link] for a strict set of analysis options used by our team. Code coverage is enforced using the [Very Good Workflows][very_good_workflows_link].
-
----
-
-## Running Tests 🧪
-
-For first time users, install the [very_good_cli][very_good_cli_link]:
+## Tests
 
 ```sh
-dart pub global activate very_good_cli
+very_good test --coverage --min-coverage 100
 ```
-
-To run all unit tests:
-
-```sh
-very_good test --coverage
-```
-
-To view the generated coverage report you can use [lcov](https://github.com/linux-test-project/lcov).
-
-```sh
-# Generate Coverage Report
-genhtml coverage/lcov.info -o coverage/
-
-# Open Coverage Report
-open coverage/index.html
-```
-
-[flutter_install_link]: https://docs.flutter.dev/get-started/install
-[github_actions_link]: https://docs.github.com/en/actions/learn-github-actions
-[license_badge]: https://img.shields.io/badge/license-MIT-blue.svg
-[license_link]: https://opensource.org/licenses/MIT
-[logo_black]: https://raw.githubusercontent.com/VGVentures/very_good_brand/main/styles/README/vgv_logo_black.png#gh-light-mode-only
-[logo_white]: https://raw.githubusercontent.com/VGVentures/very_good_brand/main/styles/README/vgv_logo_white.png#gh-dark-mode-only
-[mason_link]: https://github.com/felangel/mason
-[very_good_analysis_badge]: https://img.shields.io/badge/style-very_good_analysis-B22C89.svg
-[very_good_analysis_link]: https://pub.dev/packages/very_good_analysis
-[very_good_cli_link]: https://pub.dev/packages/very_good_cli
-[very_good_ventures_link]: https://verygood.ventures
-[very_good_ventures_link_light]: https://verygood.ventures#gh-light-mode-only
-[very_good_ventures_link_dark]: https://verygood.ventures#gh-dark-mode-only
-[very_good_workflows_link]: https://github.com/VeryGoodOpenSource/very_good_workflows

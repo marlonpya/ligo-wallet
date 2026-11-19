@@ -1,61 +1,34 @@
-# Wallet Api
+# wallet_api
 
-[![style: very good analysis][very_good_analysis_badge]][very_good_analysis_link]
-[![Powered by Mason](https://img.shields.io/endpoint?url=https%3A%2F%2Ftinyurl.com%2Fmason-badge)](https://github.com/felangel/mason)
-[![License: MIT][license_badge]][license_link]
+Capa **Datasource**: acceso HTTP al backend de la billetera. Solo lo importa `wallet_data` (y `bootstrap.dart` de la app para elegir la implementación).
 
-HTTP client (dio + retrofit), DTOs and interceptors for the wallet API.
+## Contenido
 
-## Installation 💻
+| Archivo | Qué define |
+|---|---|
+| `client/wallet_api.dart` | Contrato `WalletApi` (`login`, `getMovements`). Todos sus métodos lanzan **solo** `ApiException` |
+| `client/dio_wallet_api.dart` | Implementación real con **dio** (sin retrofit). `_guard` es el único punto que traduce `DioException` y errores de parseo a `ApiException` |
+| `fake/fake_wallet_api.dart` | Backend en memoria que respeta el contrato y **valida el token** como un servidor real. Configurable con `FakeBackendConfig` (latencia, fallos, lista vacía, sesión expirada) |
+| `interceptors/auth_interceptor.dart` | Adjunta `Authorization: Bearer` salvo en peticiones públicas (login) |
+| `exceptions/api_exception.dart` | `ApiException` sellada: red, 401, 404, servidor, respuesta malformada, desconocido |
+| `models/` | DTOs con `json_serializable` en modo *checked*. `toString()` oculta token y contraseña |
 
-**❗ In order to start using Wallet Api you must have the [Dart SDK][dart_install_link] installed on your machine.**
+## Decisiones
 
-Install via `dart pub add`:
+- **dio sin retrofit**: con dos endpoints, la generación de código no aporta. dio queda por sus interceptores, cancelación y, a futuro, *certificate pinning* y `QueuedInterceptor` para renovar el token.
+- **Sin `LogInterceptor`**: registraría el header `Authorization`.
+- **Los DTOs son espejo del JSON** (`type` y `status` como texto, `amount` como número); interpretarlos es trabajo del mapper en `wallet_data`.
 
-```sh
-dart pub add wallet_api
-```
-
----
-
-## Continuous Integration 🤖
-
-Wallet Api comes with a built-in [GitHub Actions workflow][github_actions_link] powered by [Very Good Workflows][very_good_workflows_link] but you can also add your preferred CI/CD solution.
-
-Out of the box, on each pull request and push, the CI `formats`, `lints`, and `tests` the code. This ensures the code remains consistent and behaves correctly as you add functionality or make changes. The project uses [Very Good Analysis][very_good_analysis_link] for a strict set of analysis options used by our team. Code coverage is enforced using the [Very Good Workflows][very_good_workflows_link].
-
----
-
-## Running Tests 🧪
-
-To run all unit tests:
+## Tests
 
 ```sh
-dart pub global activate coverage 1.15.0
-dart test --coverage=coverage
-dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info
+very_good test --coverage --exclude-coverage "**/*.g.dart" --min-coverage 100
 ```
 
-To view the generated coverage report you can use [lcov](https://github.com/linux-test-project/lcov).
+El cliente real se prueba contra un `HttpClientAdapter` en memoria: verifica rutas, headers, cuerpo, códigos 401/404/500, errores de red y JSON que rompe el contrato.
+
+## Generación de código
 
 ```sh
-# Generate Coverage Report
-genhtml coverage/lcov.info -o coverage/
-
-# Open Coverage Report
-open coverage/index.html
+dart run build_runner build --delete-conflicting-outputs
 ```
-
-[dart_install_link]: https://dart.dev/get-dart
-[github_actions_link]: https://docs.github.com/en/actions/learn-github-actions
-[license_badge]: https://img.shields.io/badge/license-MIT-blue.svg
-[license_link]: https://opensource.org/licenses/MIT
-[logo_black]: https://raw.githubusercontent.com/VGVentures/very_good_brand/main/styles/README/vgv_logo_black.png#gh-light-mode-only
-[logo_white]: https://raw.githubusercontent.com/VGVentures/very_good_brand/main/styles/README/vgv_logo_white.png#gh-dark-mode-only
-[mason_link]: https://github.com/felangel/mason
-[very_good_analysis_badge]: https://img.shields.io/badge/style-very_good_analysis-B22C89.svg
-[very_good_analysis_link]: https://pub.dev/packages/very_good_analysis
-[very_good_ventures_link]: https://verygood.ventures
-[very_good_ventures_link_light]: https://verygood.ventures#gh-light-mode-only
-[very_good_ventures_link_dark]: https://verygood.ventures#gh-dark-mode-only
-[very_good_workflows_link]: https://github.com/VeryGoodOpenSource/very_good_workflows
