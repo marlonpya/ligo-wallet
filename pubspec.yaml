@@ -1,0 +1,44 @@
+name: ligo_wallet
+description: Account movements module for a fintech digital wallet.
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+# Monorepo liviano con pub workspaces: una sola resolución de dependencias
+# (un solo pubspec.lock) para la app y sus paquetes internos.
+workspace:
+  - packages/wallet_domain
+  - packages/wallet_api
+  - packages/wallet_storage
+  - packages/wallet_data
+
+dependencies:
+  bloc: ^9.2.1
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  material_ui: ^1.9.0
+  # La app solo conoce wallet_data desde bootstrap.dart (composición de dependencias).
+  wallet_data:
+    path: packages/wallet_data
+  wallet_domain:
+    path: packages/wallet_domain
+
+dev_dependencies:
+  bloc_lint: ^0.4.3
+  bloc_test: ^10.0.0
+  bloc_tools: ^0.1.0-dev.25
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true

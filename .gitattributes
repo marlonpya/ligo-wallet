@@ -1,0 +1,5 @@
+# Forzar LF en el repo (dart format y CI en Linux esperan LF).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jar binary

@@ -1,0 +1,25 @@
+name: wallet_data
+description: Repository implementations (remote and fake) and DTO to domain mappers.
+version: 0.1.0+1
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  wallet_api:
+    path: ../wallet_api
+  wallet_domain:
+    path: ../wallet_domain
+  wallet_storage:
+    path: ../wallet_storage
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0
