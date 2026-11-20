@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+import 'package:feature_auth/feature_auth.dart' show DemoCredentials;
 import 'package:flutter/foundation.dart';
 
 /// Entorno de ejecución, uno por flavor.
@@ -11,17 +11,6 @@ enum AppEnvironment {
 
   /// Backend real de producción.
   production,
-}
-
-/// Credenciales de la cuenta demo del backend fake.
-final class DemoCredentials extends Equatable {
-  const new({required this.email, required this.password});
-
-  final String email;
-  final String password;
-
-  @override
-  List<Object?> get props => [email, password];
 }
 
 /// Escenarios que el backend fake puede simular en la demo.

@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ligo_wallet/app/config/app_config.dart';
-import 'package:ligo_wallet/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:wallet_domain/wallet_domain.dart';
+import 'package:wallet_l10n/wallet_l10n.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository;
 

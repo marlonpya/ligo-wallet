@@ -1,11 +1,10 @@
 import 'dart:async';
 
+import 'package:feature_auth/feature_auth.dart';
+import 'package:feature_movements/feature_movements.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ligo_wallet/app/app.dart';
 import 'package:ligo_wallet/app/view/splash_page.dart';
-import 'package:ligo_wallet/features/auth/presentation/login/view/login_page.dart';
-import 'package:ligo_wallet/features/movements/presentation/detail/view/movement_detail_page.dart';
-import 'package:ligo_wallet/features/movements/presentation/list/view/movements_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:wallet_domain/wallet_domain.dart';

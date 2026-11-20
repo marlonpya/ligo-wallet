@@ -23,8 +23,41 @@ void main() {
             .listSync(recursive: true)
             .whereType<File>()
             .where((f) => f.path.endsWith('.dart'))
-            .where((f) => !f.path.endsWith('.g.dart')),
+            .where((f) => !f.path.endsWith('.g.dart'))
+            .where((f) => !f.path.contains('${Platform.pathSeparator}gen')),
   ];
+
+  /// Dependencias internas permitidas por paquete (el grafo de capas).
+  ///
+  /// Un paquete nuevo obliga a declarar aquí sus dependencias: así el grafo
+  /// es una decisión explícita y revisable, no un efecto de agregar una línea
+  /// al `pubspec.yaml`. Las features (`feature_*`) siguen una regla común.
+  const allowedInternalDependencies = <String, Set<String>>{
+    'wallet_domain': {},
+    'wallet_api': {},
+    'wallet_storage': {},
+    'wallet_data': {'wallet_domain', 'wallet_api', 'wallet_storage'},
+    'wallet_l10n': {},
+    'wallet_ui': {'wallet_domain', 'wallet_l10n'},
+  };
+  const featureDependencies = {'wallet_domain', 'wallet_l10n', 'wallet_ui'};
+
+  final packageNames = {
+    for (final dir in Directory('packages').listSync().whereType<Directory>())
+      dir.uri.pathSegments.lastWhere((s) => s.isNotEmpty),
+  };
+
+  /// Paquetes del workspace que [package] declara en su `pubspec.yaml`.
+  Set<String> internalDependenciesOf(String package) {
+    final pubspec = File('packages/$package/pubspec.yaml').readAsStringSync();
+    return {
+      for (final match in RegExp(
+        r'^  (\w+):\s*\n\s+path:',
+        multiLine: true,
+      ).allMatches(pubspec))
+        match.group(1)!,
+    }.intersection(packageNames);
+  }
 
   test('solo bootstrap.dart importa los paquetes de datos', () {
     const dataPackages = [
@@ -96,5 +129,43 @@ void main() {
     ];
 
     expect(violations, isEmpty);
+  });
+
+  group('grafo de paquetes', () {
+    test('cada paquete solo depende de las capas permitidas', () {
+      final violations = <String>[];
+      for (final package in packageNames) {
+        final allowed = package.startsWith('feature_')
+            ? featureDependencies
+            : allowedInternalDependencies[package];
+        if (allowed == null) {
+          violations.add('$package no está declarado en el grafo del test');
+          continue;
+        }
+        for (final dependency in internalDependenciesOf(package)) {
+          if (!allowed.contains(dependency)) {
+            violations.add('$package no puede depender de $dependency');
+          }
+        }
+      }
+
+      expect(violations, isEmpty);
+    });
+
+    test('las features no conocen el router ni otras features', () {
+      // La navegación y la composición entre features son del app shell
+      // (lib/app): una feature recibe callbacks y widgets por parámetro.
+      final violations = [
+        for (final file in workspaceFiles)
+          if (relative(file).contains('packages/feature_'))
+            for (final match in RegExp(
+              r"import 'package:(go_router|feature_\w+|ligo_wallet)/",
+            ).allMatches(file.readAsStringSync()))
+              if (!relative(file).contains('packages/${match.group(1)}/'))
+                '${relative(file)} importa ${match.group(1)}',
+      ];
+
+      expect(violations, isEmpty);
+    });
   });
 }

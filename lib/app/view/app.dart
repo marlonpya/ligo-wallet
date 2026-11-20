@@ -1,14 +1,13 @@
+import 'package:feature_auth/feature_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ligo_wallet/app/config/app_config.dart';
 import 'package:ligo_wallet/app/router/app_router.dart';
-import 'package:ligo_wallet/app/theme/app_theme.dart';
-import 'package:ligo_wallet/features/auth/application/auth_use_cases.dart';
-import 'package:ligo_wallet/features/auth/presentation/session/session_bloc.dart';
-import 'package:ligo_wallet/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:wallet_domain/wallet_domain.dart';
+import 'package:wallet_l10n/wallet_l10n.dart';
+import 'package:wallet_ui/wallet_ui.dart';
 
 /// Raíz de la app: expone las dependencias (equivalente al grafo de Hilt) y
 /// crea el bloc de sesión global.

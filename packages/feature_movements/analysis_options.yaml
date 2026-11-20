@@ -1,0 +1,10 @@
+analyzer:
+  exclude:
+    - build/**
+    - lib/src/gen/**
+include: package:very_good_analysis/analysis_options.yaml
+linter:
+  rules:
+    # Igual que en la app: el código de presentación viene de ahí y se
+    # documenta donde aporta, no en cada campo.
+    public_member_api_docs: false

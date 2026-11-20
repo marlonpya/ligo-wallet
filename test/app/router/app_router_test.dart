@@ -1,6 +1,6 @@
+import 'package:feature_auth/feature_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ligo_wallet/app/router/app_router.dart';
-import 'package:ligo_wallet/features/auth/presentation/session/session_bloc.dart';
 import 'package:wallet_domain/wallet_domain.dart';
 
 void main() {
