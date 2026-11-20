@@ -90,3 +90,23 @@ jobs:
       working_directory: packages/feature_movements
       min_coverage: 80
       run_bloc_lint: true
+
+  # Recorrido de punta a punta (login -> búsqueda -> detalle -> logout) con la
+  # composición real del flavor development. Corre en el host (flutter-tester),
+  # sin emulador; en un dispositivo: `flutter test integration_test -d <id>`.
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.50.x"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: flutter test integration_test -d flutter-tester

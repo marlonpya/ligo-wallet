@@ -52,7 +52,16 @@ Future<void> bootstrap(AppEnvironment environment) async {
 
   if (kDebugMode) Bloc.observer = const AppBlocObserver();
 
-  final storage = SecureSessionStorage();
+  runApp(composeApp(environment, storage: SecureSessionStorage()));
+}
+
+/// Arma el grafo de dependencias del [environment] y devuelve la raíz de la
+/// app, sin ejecutarla.
+///
+/// Separado de [bootstrap] para que el test de integración use **la misma**
+/// composición que la app real, cambiando solo el [storage] (en el emulador
+/// (cada corrida empieza sin sesión guardada y no depende del Keystore).
+App composeApp(AppEnvironment environment, {required SessionStorage storage}) {
   final tokenProvider = sessionTokenProvider(storage);
 
   final WalletApi api;
@@ -85,12 +94,10 @@ Future<void> bootstrap(AppEnvironment environment) async {
     });
   }
 
-  runApp(
-    App(
-      config: AppConfig(environment: environment, demoBackend: demoBackend),
-      authRepository: authRepository,
-      movementsRepository: movementsRepository,
-    ),
+  return App(
+    config: AppConfig(environment: environment, demoBackend: demoBackend),
+    authRepository: authRepository,
+    movementsRepository: movementsRepository,
   );
 }
 
