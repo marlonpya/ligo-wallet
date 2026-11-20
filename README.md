@@ -57,7 +57,7 @@ Extras: i18n español/inglés (español por defecto), tema claro/oscuro, layout 
 ```sh
 git clone https://github.com/marlonpya/ligo-wallet.git
 cd ligo-wallet
-flutter pub get   # resuelve la app y los 4 paquetes (pub workspace)
+flutter pub get   # resuelve la app y los 8 paquetes (pub workspace) y genera l10n
 ```
 
 ### Flavors
@@ -118,7 +118,7 @@ En `development`, el ícono 🧪 de la barra abre un panel para cambiar la respu
 ### Tests
 
 ```sh
-# Todo el workspace (app + 4 paquetes) con cobertura
+# Todo el workspace (app + 8 paquetes) con cobertura
 very_good test -r --coverage
 
 # O por unidad
@@ -138,66 +138,76 @@ cd packages/wallet_api && dart run build_runner build --delete-conflicting-outpu
 
 ## Arquitectura
 
-Capas pedidas por el reto — **Presentation → Application → Domain → Repository → Datasource** — implementadas como un monorepo liviano con [pub workspaces](https://dart.dev/tools/pub/workspaces) (un solo `pubspec.lock`). Las fronteras entre capas son **paquetes**, así que una dependencia indebida no compila.
+Capas pedidas por el reto — **Presentation → Application → Domain → Repository → Datasource** — implementadas como un monorepo liviano con [pub workspaces](https://dart.dev/tools/pub/workspaces) (un solo `pubspec.lock`). Las fronteras son **paquetes**: por capa (dominio, datos) y por feature (auth, movements), al estilo de los módulos `:core:*` / `:feature:*` de Android. Una dependencia indebida no compila.
 
 ```mermaid
 flowchart TB
-    subgraph app["ligo_wallet (app)"]
+    subgraph shell["ligo_wallet (app shell)"]
         direction TB
-        P["<b>Presentation</b><br/>Pages · Widgets<br/>SessionBloc · LoginBloc<br/>MovementsBloc · MovementDetailCubit"]
-        A["<b>Application</b><br/>LoginUseCase · LogoutUseCase<br/>GetMovementsUseCase · GetMovementByIdUseCase"]
+        SH["<b>lib/app</b><br/>router + guard de sesión · App<br/>panel demo · config por flavor"]
         B["<b>bootstrap.dart</b><br/>composición por flavor"]
+    end
+
+    subgraph features["Features (Presentation + Application)"]
+        direction LR
+        FA["<b>feature_auth</b><br/>LoginPage · SessionBloc · LogoutButton<br/>Login/Logout/RestoreSession use cases"]
+        FM["<b>feature_movements</b><br/>MovementsPage · MovementDetailPage<br/>MovementsBloc · MovementDetailCubit<br/>GetMovements/GetMovementById use cases"]
+    end
+
+    subgraph shared["Compartido de presentación"]
+        direction LR
+        UI["<b>wallet_ui</b> (design system)<br/>AppTheme · MessageView<br/>Formatters · Failure → mensaje"]
+        L["<b>wallet_l10n</b><br/>ARB es/en · delegates"]
     end
 
     subgraph domain["wallet_domain (Dart puro)"]
         D["<b>Domain</b><br/>Movement · Money · User · SessionStatus<br/>MovementQuery · Failure · Result<br/>AuthRepository · MovementsRepository (contratos)"]
     end
 
-    subgraph data["wallet_data"]
-        R["<b>Repository</b><br/>DefaultAuthRepository<br/>DefaultMovementsRepository<br/>mappers · mapApiException"]
+    subgraph data["Datos (solo los conoce bootstrap.dart)"]
+        direction LR
+        R["<b>wallet_data</b><br/>repositorios · mappers<br/>mapApiException"]
+        DS["<b>wallet_api</b><br/>DioWalletApi · FakeWalletApi<br/>DTOs · AuthInterceptor"]
+        S["<b>wallet_storage</b><br/>SecureSessionStorage"]
     end
 
-    subgraph api["wallet_api"]
-        DS["<b>Datasource</b><br/>WalletApi (contrato)<br/>DioWalletApi · FakeWalletApi<br/>DTOs · AuthInterceptor"]
-    end
-
-    subgraph storage["wallet_storage"]
-        S["SecureSessionStorage<br/>(flutter_secure_storage)"]
-    end
-
-    P --> A --> D
+    SH --> FA & FM
+    FA & FM --> UI --> L
+    FA & FM --> D
+    UI --> D
     R -. implementa .-> D
-    R --> DS
-    R --> S
+    R --> DS & S
     B -. cablea .-> R
-    B -. elige Dio o Fake .-> DS
 ```
 
 **Reglas de dependencia** (verificadas por el compilador y por [`test/architecture_test.dart`](test/architecture_test.dart)):
 
 - `wallet_domain` no depende de Flutter ni de ningún otro paquete del repo.
-- La app solo conoce **contratos** del dominio. `wallet_api`, `wallet_data` y `wallet_storage` se importan **únicamente** en `lib/bootstrap.dart`.
+- **Grafo de paquetes declarado**: cada paquete solo puede depender de las capas permitidas (las features, de `wallet_domain`, `wallet_ui` y `wallet_l10n`). Un paquete nuevo obliga a declarar sus dependencias en el test.
+- **Las features no se conocen entre sí ni conocen el router**: reciben la navegación (`onMovementSelected`, `onBackToList`), el saludo y las acciones extra (logout, panel demo) por parámetro desde `lib/app`, que es quien compone.
+- La app y las features solo conocen **contratos** del dominio. `wallet_api`, `wallet_data` y `wallet_storage` se importan **únicamente** en `lib/bootstrap.dart`.
 - Ningún widget llama a la API ni a un repositorio: `Widget → Bloc → UseCase → Repository → Datasource`.
+
+**Por qué escala:** agregar una feature (por ejemplo, `feature_transfers`) es crear un paquete que depende de dominio y design system, y registrar su ruta en `lib/app/router`. No toca las otras features, se compila y testea por separado (un job de CI por paquete) y puede tener dueño propio. Es la topología de *micro-apps* de las fintech grandes, pero en un solo repositorio: sin submódulos ni versiones desincronizadas.
 
 ### Estructura
 
 ```
 ligo_wallet/
-├── lib/
+├── lib/                     # app shell
 │   ├── bootstrap.dart              # composición de dependencias por flavor
 │   ├── main_{development,staging,production}.dart
-│   ├── app/                        # App, router (go_router + guard), tema, config
-│   ├── core/presentation/          # Failure → mensaje, formateo, widgets compartidos
-│   ├── features/
-│   │   ├── auth/        application/ + presentation/ (session, login)
-│   │   └── movements/   application/ + presentation/ (list, detail)
-│   └── l10n/                       # ARB es/en
+│   └── app/                        # App, router (go_router + guard), config, panel demo
 ├── packages/
-│   ├── wallet_domain/   # entidades, Money, MovementQuery, Failure, Result, contratos
-│   ├── wallet_api/      # WalletApi, DioWalletApi, FakeWalletApi, DTOs, AuthInterceptor
-│   ├── wallet_storage/  # SessionStorage sobre flutter_secure_storage
-│   └── wallet_data/     # repositorios, mappers, mapApiException
-└── test/                # tests de la app (cada paquete tiene su propio test/)
+│   ├── feature_auth/        # login, sesión, logout (use cases + presentación)
+│   ├── feature_movements/   # listado y detalle (use cases + presentación)
+│   ├── wallet_ui/           # design system: tema, MessageView, formatos, Failure → mensaje
+│   ├── wallet_l10n/         # ARB es/en y delegates (compatibles con material_ui)
+│   ├── wallet_domain/       # entidades, Money, MovementQuery, Failure, Result, contratos
+│   ├── wallet_api/          # WalletApi, DioWalletApi, FakeWalletApi, DTOs, AuthInterceptor
+│   ├── wallet_storage/      # SessionStorage sobre flutter_secure_storage
+│   └── wallet_data/         # repositorios, mappers, mapApiException
+└── test/                    # tests del app shell (cada paquete tiene su propio test/)
 ```
 
 ### Flujo de una petición autenticada (y del 401)
@@ -243,7 +253,7 @@ sequenceDiagram
 | **`Result<T>` + `Failure` sellados (Dart 3)** | El error es parte del tipo; el `switch` exhaustivo obliga a manejar cada caso | `Result` de Kotlin · `Result<_, Error>` de Swift |
 | **Dinero en céntimos (`int`)** | Nunca `double`: `0.1 + 0.2 ≠ 0.3`. El JSON se parsea desde su texto decimal | `BigDecimal` · `Decimal` |
 | **go_router con guard como función pura** | `sessionRedirect(state, location)` se testea sin widgets | Navigation Component + guard |
-| **pub workspaces + 4 paquetes** | Las fronteras de capa son de compilación, no solo de convención | Módulos Gradle · Swift Packages |
+| **pub workspaces + 8 paquetes (capas y features)** | Las fronteras de capa y de feature son de compilación, no solo de convención; cada feature se testea por separado | Módulos Gradle `:core:*` / `:feature:*` · Swift Packages |
 | **`material_ui`** (Material desacoplado del SDK) | Es lo que genera la plantilla actual de Very Good CLI | — |
 
 ### Bloc y no Riverpod
@@ -325,7 +335,7 @@ Estado al 2026-11-19 (pub.dev; los puntos están sobre 160):
 
 ## Testing
 
-**280 tests** repartidos por capa, todos con mocks (`mocktail`) en las fronteras:
+**291 tests** repartidos por paquete, todos con mocks (`mocktail`) en las fronteras:
 
 | Unidad | Tests | Cobertura | Qué cubre |
 |---|---:|---:|---|
@@ -333,13 +343,17 @@ Estado al 2026-11-19 (pub.dev; los puntos están sobre 160):
 | `wallet_api` | 42 | 100 %¹ | Cliente dio contra un servidor simulado (headers, 401/404/500, red, JSON inválido), DTOs, backend fake |
 | `wallet_storage` | 11 | 100 % | Lectura/escritura/borrado, sesión incompleta, errores de plataforma, `toString` sin token |
 | `wallet_data` | 52 | 100 % | Mappers (montos, monedas, fechas), repositorios con datasource mockeado, 401 → expiración, carrera de 401 |
-| App | 118 | ~99 %² | Casos de uso, Blocs con `bloc_test`, guard del router, widgets de cada estado, flujos completos (login, logout, expiración, detalle, idioma) |
+| `wallet_l10n` | 2 | 100 %¹ | Idioma de respaldo y delegates compatibles con `material_ui` |
+| `wallet_ui` | 15 | 100 % | Mensaje de cada `Failure`, formatos de montos y fechas, `MessageView`, tema |
+| `feature_auth` | 34 | ~98 % | Casos de uso, `LoginBloc` y `SessionBloc` con `bloc_test`, pantalla de login, logout con confirmación |
+| `feature_movements` | 50 | ~97 % | Casos de uso, `MovementsBloc` (debounce, filtros, refresco) y `MovementDetailCubit`, widgets de cada estado, composición por parámetros |
+| App shell | 28 | ~98 %² | Guard del router, panel demo, reglas de arquitectura, flujos completos (login, logout, expiración, detalle, idioma) |
 
-¹ Sin contar código generado. ² Sin contar l10n generado; los paquetes miden su cobertura por separado.
+¹ Sin contar código generado. ² Sin contar los paquetes: cada uno mide su cobertura en su propio job de CI.
 
 **Casos borde cubiertos:** lista vacía · búsqueda sin resultados · filtro + búsqueda combinados · token expirado · error de red y retry · refresco fallido con datos · doble envío · 401 concurrentes · respuesta malformada · deep link sin caché · idioma no soportado → español.
 
-**Regla de arquitectura como test:** `test/architecture_test.dart` falla si un archivo fuera de `bootstrap.dart` importa los paquetes de datos, si la app importa dio/http, si aparece un `print`, si alguna capa importa `dart:io`/`dart:html` (rompería web) o si hay estado global mutable (`static` no `final` o variables top-level).
+**Regla de arquitectura como test:** `test/architecture_test.dart` falla si un archivo fuera de `bootstrap.dart` importa los paquetes de datos, si la app importa dio/http, si aparece un `print`, si alguna capa importa `dart:io`/`dart:html` (rompería web), si hay estado global mutable (`static` no `final` o variables top-level), si un paquete depende de una capa no permitida o si una feature importa el router u otra feature.
 
 El CI ([`.github/workflows/main.yaml`](.github/workflows/main.yaml)) corre formato, análisis, `bloc_lint` y tests con umbral de cobertura en **un job por paquete**, más un chequeo de licencias de todas las dependencias (directas y transitivas).
 

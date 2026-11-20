@@ -11,6 +11,7 @@ Como **par de programación**, no como generador autónomo. Antes de escribir c�
 - Leyó el enunciado (PDF) y lo contrastó con mi plan, señalando lo que faltaba (escala de evaluación, SOLID, manejo de errores centralizado, cobertura) y los huecos del contrato (sin fecha, sin moneda, valores de `status`).
 - Generó el scaffolding con Very Good CLI y configuró el pub workspace con los 4 paquetes.
 - Implementó cada capa con sus tests, en el orden dominio → storage → api → data → app.
+- Separó después las features (`auth`, `movements`), el design system (`wallet_ui`) y los textos (`wallet_l10n`) en paquetes del workspace, invirtiendo los acoplamientos (navegación, sesión y panel demo pasan por parámetro desde el app shell) y agregando reglas de arquitectura que lo verifican.
 - Corrió `flutter analyze`, los tests y el CI después de cada paso, e investigó cada fallo hasta su causa.
 - Probó la app en el navegador (login, sesión, listado, búsqueda, filtros, detalle, escenarios de error) y tomó las capturas.
 - Redactó la documentación.
@@ -21,7 +22,7 @@ Las decisiones de arquitectura y de alcance fueron mías; la IA propuso opciones
 
 - La estructura por capas y paquetes, los contratos del dominio, `Result`/`Failure` sellados y `Money` en céntimos.
 - Los repositorios, mappers, Blocs/Cubit, router con guard y las pantallas.
-- Los tests (≈280), después de revisar que probaran comportamiento y no implementación.
+- Los tests (≈290), después de revisar que probaran comportamiento y no implementación.
 - La configuración del CI y la documentación, con ajustes.
 
 ## ¿Qué código descarté o corregí?
