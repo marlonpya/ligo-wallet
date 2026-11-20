@@ -29,7 +29,7 @@ jobs:
       run_bloc_lint: true
       min_coverage: 80
       # Los paquetes del workspace miden su cobertura en su propio job.
-      coverage_excludes: "lib/l10n/gen/** packages/**"
+      coverage_excludes: "packages/**"
 
   wallet_domain:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
@@ -59,3 +59,34 @@ jobs:
       flutter_version: "3.50.x"
       working_directory: packages/wallet_data
       min_coverage: 80
+
+  wallet_l10n:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      working_directory: packages/wallet_l10n
+      min_coverage: 80
+      coverage_excludes: "lib/src/gen/**"
+
+  wallet_ui:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      working_directory: packages/wallet_ui
+      min_coverage: 80
+
+  feature_auth:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      working_directory: packages/feature_auth
+      min_coverage: 80
+      run_bloc_lint: true
+
+  feature_movements:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: "3.50.x"
+      working_directory: packages/feature_movements
+      min_coverage: 80
+      run_bloc_lint: true

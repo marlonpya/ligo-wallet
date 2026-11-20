@@ -14,31 +14,37 @@ workspace:
   - packages/wallet_api
   - packages/wallet_storage
   - packages/wallet_data
+  - packages/wallet_l10n
+  - packages/wallet_ui
+  - packages/feature_auth
+  - packages/feature_movements
 
 dependencies:
   bloc: ^9.2.1
-  bloc_concurrency: ^0.3.0
-  equatable: ^3.0.0
+  feature_auth:
+    path: packages/feature_auth
+  feature_movements:
+    path: packages/feature_movements
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  flutter_localizations:
-    sdk: flutter
   go_router: ^18.1.4
-  intl: ^0.20.2
   material_ui: ^1.9.0
   # wallet_api, wallet_data y wallet_storage solo se importan en
   # lib/bootstrap.dart (composición de dependencias). Lo verifica
   # test/architecture_test.dart. El resto de la app solo ve wallet_domain.
-  stream_transform: ^2.1.2
   wallet_api:
     path: packages/wallet_api
   wallet_data:
     path: packages/wallet_data
   wallet_domain:
     path: packages/wallet_domain
+  wallet_l10n:
+    path: packages/wallet_l10n
   wallet_storage:
     path: packages/wallet_storage
+  wallet_ui:
+    path: packages/wallet_ui
 
 dev_dependencies:
   bloc_lint: ^0.4.3
@@ -50,5 +56,4 @@ dev_dependencies:
   very_good_analysis: ^11.0.0
 
 flutter:
-  generate: true
   uses-material-design: true
