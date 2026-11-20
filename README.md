@@ -123,6 +123,7 @@ very_good test -r --coverage
 
 # O por unidad
 flutter test                         # app
+flutter test integration_test -d flutter-tester   # punta a punta (o -d <dispositivo>)
 cd packages/wallet_domain && dart test
 ```
 
@@ -335,7 +336,7 @@ Estado al 2026-11-19 (pub.dev; los puntos están sobre 160):
 
 ## Testing
 
-**291 tests** repartidos por paquete, todos con mocks (`mocktail`) en las fronteras:
+**291 tests** unitarios y de widgets repartidos por paquete, con mocks (`mocktail`) en las fronteras, más **2 de integración**:
 
 | Unidad | Tests | Cobertura | Qué cubre |
 |---|---:|---:|---|
@@ -348,6 +349,7 @@ Estado al 2026-11-19 (pub.dev; los puntos están sobre 160):
 | `feature_auth` | 34 | ~98 % | Casos de uso, `LoginBloc` y `SessionBloc` con `bloc_test`, pantalla de login, logout con confirmación |
 | `feature_movements` | 50 | ~97 % | Casos de uso, `MovementsBloc` (debounce, filtros, refresco) y `MovementDetailCubit`, widgets de cada estado, composición por parámetros |
 | App shell | 28 | ~98 %² | Guard del router, panel demo, reglas de arquitectura, flujos completos (login, logout, expiración, detalle, idioma) |
+| `integration_test` | 2 | — | De punta a punta con la composición real del flavor `development` (`composeApp`) y el backend fake con su latencia: credenciales inválidas, login, búsqueda, detalle, volver, logout (y que borre la sesión), sesión restaurada al reabrir |
 
 ¹ Sin contar código generado. ² Sin contar los paquetes: cada uno mide su cobertura en su propio job de CI.
 
@@ -355,7 +357,7 @@ Estado al 2026-11-19 (pub.dev; los puntos están sobre 160):
 
 **Regla de arquitectura como test:** `test/architecture_test.dart` falla si un archivo fuera de `bootstrap.dart` importa los paquetes de datos, si la app importa dio/http, si aparece un `print`, si alguna capa importa `dart:io`/`dart:html` (rompería web), si hay estado global mutable (`static` no `final` o variables top-level), si un paquete depende de una capa no permitida o si una feature importa el router u otra feature.
 
-El CI ([`.github/workflows/main.yaml`](.github/workflows/main.yaml)) corre formato, análisis, `bloc_lint` y tests con umbral de cobertura en **un job por paquete**, más un chequeo de licencias de todas las dependencias (directas y transitivas).
+El CI ([`.github/workflows/main.yaml`](.github/workflows/main.yaml)) corre formato, análisis, `bloc_lint` y tests con umbral de cobertura en **un job por paquete**, más el test de integración y un chequeo de licencias de todas las dependencias (directas y transitivas).
 
 ---
 
@@ -420,7 +422,16 @@ El contrato del reto es mínimo; estas son las interpretaciones tomadas:
 
 ## Uso de IA
 
-Ver [docs/USO_DE_IA.md](docs/USO_DE_IA.md).
+| | Resumen |
+|---|---|
+| **Herramienta** | Claude Code (Claude Opus 5.5) como par de programación, con acceso al repo, la terminal y un navegador para probar la versión web |
+| **Para qué** | Contrastar el enunciado con el plan, implementar cada capa con sus tests, separar las features en paquetes, configurar el CI y redactar la documentación. Las decisiones de arquitectura y alcance fueron mías |
+| **Qué acepté** | Estructura por capas y paquetes, `Result`/`Failure`, `Money` en céntimos, repositorios, Blocs, router con guard, pantallas y tests (después de revisar que prueben comportamiento) |
+| **Qué descarté** | retrofit y `freezed` (sobreingeniería), fakes a nivel repositorio (no ejercitaban el 401 real), un `BlocObserver` que habría registrado la contraseña, un interceptor duplicado y los cambios de `dart fix --apply` sin revisar |
+| **Qué validé a mano** | Cada flujo y escenario de error en el navegador, el `localStorage` en web (así encontré el riesgo de la clave), las APIs dudosas contra el código fuente del paquete y cada corrida del CI |
+| **Riesgos** | APIs inventadas o desactualizadas, tests que pasan por la razón equivocada, carreras de concurrencia (dos 401 a la vez), datos sensibles en logs y sobreingeniería. Las reglas de arquitectura en CI existen para que ningún código, de persona o de IA, rompa las capas sin que se note |
+
+Detalle completo, con la tabla de propuestas descartadas: [docs/USO_DE_IA.md](docs/USO_DE_IA.md).
 
 ---
 
@@ -430,5 +441,5 @@ Ver [docs/USO_DE_IA.md](docs/USO_DE_IA.md).
 - **Kotlin integrado de AGP 9**: el proyecto usa `android.builtInKotlin=false` (migración automática de Flutter). Pendiente migrar según la [guía oficial](https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers).
 - **Caché offline**: fuera de alcance. Siguiente paso: `drift` como fuente de verdad local (en web requiere `sqlite3.wasm` + worker) con *stale-while-revalidate*.
 - **Paginación** del listado cuando el backend la ofrezca.
-- **Integration test** (`integration_test`) del flujo login → listado → detalle sobre el flavor `development`.
+- **Integration test en dispositivo** en el CI (emulador Android con `reactivecircus/android-emulator-runner`); hoy corre en el host.
 - Renovación de token y certificate pinning (ver [Seguridad](#plan-para-producción-no-implementado)).
