@@ -47,7 +47,7 @@ dependencies:
     path: packages/wallet_ui
 
 dev_dependencies:
-  bloc_lint: ^0.4.3
+  bloc_lint: ^0.4.4
   bloc_test: ^10.0.0
   bloc_tools: ^0.1.0-dev.25
   flutter_test:
